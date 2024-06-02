@@ -50,7 +50,7 @@ def verify_phone_number(phone_number):
     status = None
     verification = send_otp(phone_number)
     start_time = time.time()
-    provided_code = input("Enter the verification code sent to your phone: ")
+    provided_code = input("Enter the OTP sent to your phone: ")
     end_time = time.time()
     if end_time - start_time < 60:
         verification_check = verification.verification_checks.create(to=phone_number,code=provided_code)

@@ -13,7 +13,7 @@ def primary_phone_setup():
         return False
 
 def alternate_phone_setup():  
-    alternate_phone_number = input("Enter an alternate phone number (with country code): ")
+    alternate_phone_number = input("Enter alternate phone number (with country code): ")
     _,verified = verify_phone_number(alternate_phone_number)
     if verified:
         with open('./pwds/alternate_phone_number.key', 'w') as f:
