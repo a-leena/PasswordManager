@@ -1,7 +1,8 @@
 import sqlite3
 import time
+import string
+import random
 from first_time_setup import *
-from utils import *
 from recovery import *
 from auth import *
 from db import *
@@ -52,21 +53,35 @@ failed_attempts_mpwd_alt = 0
 lockout_start_alt = None
 
 def check_locked(time_now):
+    try_after = 0
     login_blocked = lockout_start and time_now - lockout_start < LOCKOUT_DURATION
+    if login_blocked:
+        try_after = LOCKOUT_DURATION - (time_now - lockout_start)
     recovery_blocked = lockout_start_rec and time_now - lockout_start_rec <  LOCKOUT_DURATION_REC
+    if recovery_blocked:
+        try_after = LOCKOUT_DURATION_REC - (time_now - lockout_start_rec)
     alternate_login_blocked = lockout_start_alt and time_now - lockout_start_alt < LOCKOUT_DURATION_ALT
-    return login_blocked or recovery_blocked or alternate_login_blocked
+    if alternate_login_blocked:
+        try_after = LOCKOUT_DURATION_ALT - (time_now - lockout_start_alt)
+    return login_blocked or recovery_blocked or alternate_login_blocked, try_after
+    
+def locking_message():
+    print("Account locked due to too many failed attempts.")
+
+def locking_message_otp():
+    print("Account locked due to too many failed OTP attempts.")
+
+def locked_message(try_after):
+    unit = "seconds" if try_after<60 else "minutes"
+    print(f"\nAccount Locked! Try again after {try_after//60 if try_after>=60 else try_after} {unit}.")
+    
     
 def login():
     global failed_attempts_mpwd, lockout_start
-    if failed_attempts_mpwd >= MAXIMUM_ATTEMPTS_MPWD:
-        print("Account locked due to too many failed attempts!")
-        lockout_start = time.time()
-        failed_attempts_mpwd = 0
-        return False
-        
-    if check_locked(time.time()):
-        print("Account Locked! Try again later.")
+    
+    locked, try_after = check_locked(time.time())
+    if locked:
+        locked_message(try_after)
         return False
         
     stored_master_password = load_master_password()
@@ -83,28 +98,34 @@ def login():
                     lockout_start = None
                     return True
                 else:
-                    print("Invalid OTP!")
                     failed_attempts_otp += 1
+                    print("Invalid OTP!")
+                    if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP:
+                        print(f"{MAXIMUM_ATTEMPTS_OTP-failed_attempts_otp} attempts left.")
             else:
                 failed_attempts_otp += 1
-        print("Account locked due to too many failed OTP attempts!")
+                if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP:
+                    print(f"{MAXIMUM_ATTEMPTS_OTP-failed_attempts_otp} attempts left.")
+        locking_message_otp()
         lockout_start = time.time()
         return False
     else:
         failed_attempts_mpwd += 1
-        print("Incorrect Password! Try again.")
+        print("Incorrect Password!")
+        if failed_attempts_mpwd >= MAXIMUM_ATTEMPTS_MPWD:
+            locking_message()
+            lockout_start = time.time()
+            failed_attempts_mpwd = 0
+        else:
+            print(f"{MAXIMUM_ATTEMPTS_MPWD-failed_attempts_mpwd} attempts left.")
         return False
 
 def recover_account():
     global failed_attempts_code_rec, lockout_start_rec
-    if failed_attempts_code_rec >= MAXIMUM_ATTEMPTS_CODE_REC:
-        print("Account locked due to too many failed attempts!")
-        lockout_start_rec = time.time()
-        failed_attempts_code_rec = 0
-        return False
     
-    if check_locked(time.time()):
-        print("Account Locked! Try again later.")
+    locked, try_after = check_locked(time.time())
+    if locked:
+        locked_message(try_after)
         return False
     
     stored_recovery_code = load_recovery_code()
@@ -121,28 +142,34 @@ def recover_account():
                     lockout_start_rec = None
                     return True
                 else:
-                    print("Invalid OTP!")
                     failed_attempts_otp += 1
+                    print("Invalid OTP!")
+                    if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP_REC:
+                        print(f"{MAXIMUM_ATTEMPTS_OTP_REC-failed_attempts_otp} attempts left.")
             else:
                 failed_attempts_otp += 1
-        print("Account locked due to too many failed OTP attempts!")
+                if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP_REC:
+                    print(f"{MAXIMUM_ATTEMPTS_OTP_REC-failed_attempts_otp} attempts left.")
+        locking_message_otp()
         lockout_start_rec = time.time()
         return False
     else:
         failed_attempts_code_rec += 1
-        print("Incorrect Recovery Code! Try again.")
+        print("Incorrect Recovery Code!")
+        if failed_attempts_code_rec >= MAXIMUM_ATTEMPTS_CODE_REC:
+            locking_message()
+            lockout_start_rec = time.time()
+            failed_attempts_code_rec = 0
+        else:
+            print(f"{MAXIMUM_ATTEMPTS_CODE_REC-failed_attempts_code_rec} attempts left.")
         return False
     
 def alternate_login():
     global failed_attempts_mpwd_alt, lockout_start_alt
-    if failed_attempts_mpwd_alt >= MAXIMUM_ATTEMPTS_MPWD_ALT:
-        print("Account locked due to too many failed attempts!")
-        lockout_start_alt = time.time()
-        failed_attempts_mpwd_alt = 0
-        return False
     
-    if check_locked(time.time()):
-        print("Account Locked! Try again later.")
+    locked, try_after = check_locked(time.time())
+    if locked:
+        locked_message(try_after)
         return False
     
     stored_master_password = load_master_password()
@@ -159,19 +186,56 @@ def alternate_login():
                     lockout_start_alt = None
                     return True
                 else:
-                    print("Invalid OTP!")
                     failed_attempts_otp += 1
+                    print("Invalid OTP!")
+                    if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP_ALT:
+                        print(f"{MAXIMUM_ATTEMPTS_OTP_ALT-failed_attempts_otp} attempts left.")
             else:
                 failed_attempts_otp += 1
-        print("Account locked due to too many failed OTP attempts!")
+                if failed_attempts_otp < MAXIMUM_ATTEMPTS_OTP_ALT:
+                    print(f"{MAXIMUM_ATTEMPTS_OTP_ALT-failed_attempts_otp} attempts left.")
+        locking_message_otp()
         lockout_start_alt = time.time()
         return False
     else:
         failed_attempts_mpwd_alt += 1
-        print("Incorrect Password! Try again.")
+        print("Incorrect Password!")
+        if failed_attempts_mpwd_alt >= MAXIMUM_ATTEMPTS_MPWD_ALT:
+            locking_message()
+            lockout_start_alt = time.time()
+            failed_attempts_mpwd_alt = 0
+        else:
+            print(f"{MAXIMUM_ATTEMPTS_MPWD_ALT-failed_attempts_mpwd_alt} attempts left.")
         return False
-            
 
+def generate_password(length=12, use_special_chars=True):
+    characters = string.ascii_letters + string.digits
+    if use_special_chars:
+        characters += string.punctuation
+    return ''.join(random.choice(characters) for i in range(length))     
+
+def instructions():
+    print("1. For initial setup of your Password Manager-")     
+    print("  a. Create a strong Master Password.")
+    print("    - Password be at least 12 characters long.")
+    print("    - Password must contain upper & lower-case alphabets, numerical digits and special characters.")
+    print("  b. Have one primary and one alternate phone number.")
+    print("    - Make sure that your primary phone number is always accessible to you for OTP verifications during Login.")
+    print("  c. A recovery code will be generated.")
+    print("    - You must ensure that this code is stored somewhere securely in case of forgetting your master password.")
+    print("2. Login to the Password Manager.")
+    print("  - Enter your master password and OTP sent to your primary phone number.")
+    print("  - ")
+    print("  - For each credential (pair of username/email and password), that you want to store in your Password Manager, assign a name to its service.")
+    print("  - When requesting to view a credential the service name must be provided.")
+    print("  - If there are many services with similar names, then the Search feature can be used. Enter the part of the name you recall and all services with names matching your query will be displayed to you along with their respective usernames. Once you have found the service-username pair you actually wanted, use that service name to retrieve the password.")
+    print("3. In case you have forgotten your master password, you can Recover your Password Manager using the recovery code and an OTP will be sent to your primary phone number for verification.")
+    print("4. If your primary phone number is temporarily inaccessible you may use the Alternate Login method to access your Password Manager using your master password and an OTP sent to your alternate phone number.")
+    print("  - You will only have limited access to your Password Manager.")
+    print("  - You can only view the credentials that are highly critical for you to access.")
+    print("  - Search will be disabled, you are required to remember the names you had given to the few services whose credentials are highly critical to you.")
+    print("  - For the security of your credentials it is advisable to not set all of them as highly critical.")
+    
 def main():
     while True:
         print("\nPassword Manager\n")
@@ -185,7 +249,8 @@ def main():
         if choice=='1':
             if login():
                 while True:
-                    print("\n1. Add Credentials")
+                    print("\nLogin to Password Manager\n")
+                    print("1. Add Credentials")
                     print("2. Retrieve Credentials")
                     print("3. Update Credentials")
                     print("4. Delete Credentials")
@@ -378,8 +443,8 @@ def main():
                         print("Invalid choice!")
         
         elif choice == '2':
-            print("\nRecover Account\n")
             if recover_account():
+                print("\nRecover Account\n")
                 if set_master_password():
                     print("Master Password successfully changed!")
                 else:
@@ -388,7 +453,7 @@ def main():
         elif choice == '3':
             if alternate_login():
                 while True:
-                    print("\nAlternate Login to Password Manager")       
+                    print("\nAlternate Login to Password Manager\n")       
                     print("1. Retrieve Critical Credentials")
                     print("2. Change Primary Phone Number")
                     print("3. Logout")
@@ -424,7 +489,7 @@ def main():
                     else:
                         print("Invalid choice!")
         elif choice == '4':
-            print("\nSecure Password Generator\n")
+            print("\nStrong Password Generator\n")
             length = int(input("Enter the length needed for password: "))
             use_special_chars = input("Should the password include special characters?(y/n): ")
             if use_special_chars.lower()=='y':
@@ -440,6 +505,8 @@ def main():
 
         elif choice == '5':
             print("\nInstructions for using your Password Manager\n")
+            instructions()
+            
         elif choice == '6':
             print('Exiting Password Manager...')
             break
