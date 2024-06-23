@@ -110,7 +110,9 @@ def update_critical_status(conn, service, new_is_critical):
 def update_all(conn, old_service_name, new_service_name, new_username, new_password, new_is_critical):
     try:
         c = conn.cursor()
-        c.execute('UPDATE passwords SET service=?, username=?, password=?, is_critical=? WHERE service=?',(new_service_name,new_username,new_password,new_is_critical,old_service_name))
+        encrypted_username = encrypt(username=new_username)
+        encrypted_password = encrypt(password=new_password)
+        c.execute('UPDATE passwords SET service=?, username=?, password=?, is_critical=? WHERE service=?',(new_service_name,encrypted_username,encrypted_password,new_is_critical,old_service_name))
         conn.commit()
         return True
     except Exception as e:

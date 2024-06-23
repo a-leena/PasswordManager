@@ -14,9 +14,19 @@ def set_master_password():
         if confirm_password == password:
             if check_password_strength(password):
                 save_master_password(password)
-                return True
+                break
         else:
             print("Password didn't match! Try again.")
+            
+def reset_master_password():
+    password = getpass("Enter master password for your Password Manager: ")
+    confirm_password = getpass("Confirm master password for your Password Manager: ")
+    if confirm_password == password:
+        if check_password_strength(password):
+            save_master_password(password)
+            return True
+    else:
+        print("Password didn't match! Try again.")
         return False
     
 if __name__ == '__main__':
