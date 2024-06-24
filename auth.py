@@ -9,12 +9,11 @@ def hash_password (password):
     pwdhash = bcrypt.hashpw(password.encode('utf-8'),salt)
     return pwdhash
 
-
-def verify_password(stored_password, provided_password):
+def verify_password (stored_password, provided_password):
     return bcrypt.checkpw(provided_password.encode('utf-8'), stored_password)
 
 
-def check_password_strength(password):
+def check_password_strength (password):
     if len(password) < 12:
         print("Password must contain at least 12 characters")
         return False
@@ -35,7 +34,7 @@ def check_password_strength(password):
         
   
 # Function to send otp to user during login
-def send_otp(phone_number):
+def send_otp (phone_number):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     sms_sid = os.environ['SMS_SERVICE_SID']
@@ -46,7 +45,7 @@ def send_otp(phone_number):
     return verification
 
 
-def verify_phone_number(phone_number):
+def verify_phone_number (phone_number):
     status = None
     verification = send_otp(phone_number)
     start_time = time.time()

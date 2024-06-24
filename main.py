@@ -6,6 +6,7 @@ from first_time_setup import *
 from auth import *
 from db import *
 from getpass import getpass
+from encryption import decrypt_numbers
 
 # Database setup
 conn = sqlite3.connect('./pwds/password_manager.db')
@@ -19,9 +20,9 @@ def load_master_password():
 # Load the phone numbers
 def load_phone_numbers():
     with open ('./pwds/primary_phone_number.key', 'r') as f1:
-        phone_number = f1.read()
+        phone_number = decrypt_numbers(encrPrimNum=f1.read())[0]
     with open ('./pwds/alternative_phone_number.key', 'r') as f2:
-        alternative_phone_number = f2.read()
+        alternative_phone_number = decrypt_numbers(encrAltNum=f2.read())[1]
     return phone_number, alternative_phone_number
     
 # Load the recovery code

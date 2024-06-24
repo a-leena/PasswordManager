@@ -5,7 +5,7 @@ def save_master_password(password):
     hashed_password = hash_password(password)
     with open('./pwds/master_pwd.key', 'wb') as f:
         f.write(hashed_password)
-    print("Master password hashed and saved successfully!")
+    print("Master password set successfully!")
   
 def set_master_password():
     while True:
