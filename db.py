@@ -16,7 +16,7 @@ def create_table(conn):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while creating table!\n{e}")
+        print(f"Exception occurred while creating table!\n{e}")
         return False
 
 
@@ -29,7 +29,7 @@ def add_credentials(conn, service, username, password, is_critical):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while adding new credentials!\n{e}")
+        print(f"Exception occurred while adding new credentials!\n{e}")
         return False
 
 # Fetch username and password from the database for a particular service
@@ -49,7 +49,7 @@ def get_credentials(conn, service, critical_only=None):
         else:
             return None, None
     except Exception as e:
-        print(f"Exception occured while retrieving credentials!\n{e}")
+        print(f"Exception occurred while retrieving credentials!\n{e}")
         return None, None
 
 
@@ -62,7 +62,7 @@ def delete_service(conn, service):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while deleting credentials!\n{e}")
+        print(f"Exception occurred while deleting credentials!\n{e}")
         return False
 
   
@@ -76,7 +76,7 @@ def update_service(conn, old_service_name, new_service_name):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while updating credentials!\n{e}")
+        print(f"Exception occurred while updating credentials!\n{e}")
         return False
 
 def update_username(conn, service, new_username):
@@ -87,7 +87,7 @@ def update_username(conn, service, new_username):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while updating credentials!\n{e}")
+        print(f"Exception occurred while updating credentials!\n{e}")
         return False
 
 def update_password(conn, service, new_password):
@@ -98,7 +98,7 @@ def update_password(conn, service, new_password):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while updating credentials!\n{e}")
+        print(f"Exception occurred while updating credentials!\n{e}")
         return False
 
 def update_critical_status(conn, service, new_is_critical):
@@ -109,7 +109,7 @@ def update_critical_status(conn, service, new_is_critical):
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while updating credentials!\n{e}")
+        print(f"Exception occurred while updating credentials!\n{e}")
         return False
 
 def update_all(conn, old_service_name, new_service_name, new_username, new_password, new_is_critical):
@@ -121,7 +121,7 @@ def update_all(conn, old_service_name, new_service_name, new_username, new_passw
         conn.commit()
         return True
     except Exception as e:
-        print(f"Exception occured while updating credentials!\n{e}")
+        print(f"Exception occurred while updating credentials!\n{e}")
         return False
 
 
@@ -139,5 +139,5 @@ def search_services(conn, search_term):
                 return_results.append((service,uname))
         return return_results
     except Exception as e:
-        print(f"Exception occured while searching for services!\n{e}")
+        print(f"Exception occurred while searching for services!\n{e}")
         return None

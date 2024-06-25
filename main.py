@@ -261,11 +261,21 @@ def main():
                     
                     if action=='1':
                         print("\nAdd New Credentials\n")
-                        print("Assign a name to the service whose credentials you want to save")
-                        service_name = input("Enter service name: ")
+                        print("Assign a name to the service whose credentials you want to save\n(Maximum 15 characters long; Only alphabets and digits allowed)")
+                        while True:
+                            service_name = input("Enter service name: ")
+                            if len(service_name)>15:
+                                print("Service name too long!")
+                                continue
+                            pattern = re.compile(r'^[a-zA-Z0-9]+$')
+                            if not bool(pattern.match(service_name)):
+                                print("Invalid service name!")
+                                continue
+                            else:
+                                break
                         username = input("\nEnter service username/email address: ")
                         password = input("\nEnter service password: ")
-                        print("Will you be needing the credentials of this service even during alternative Login?")
+                        print("Will you be needing the credentials of this service even during Alternative Login?")
                         is_critical = input("Is the service highly critical? (y/n): ")
                         if is_critical.lower()=='y':
                             is_critical = 1
@@ -383,6 +393,8 @@ def main():
                             print("\nSearch results-\n")
                             for i in range(len(results)):
                                 print(f"Service {i+1}: {results[i][0]}\nUsername: {results[i][1]}\n")
+                        else:
+                            print("No matching services!")
                     
                     elif action=='6':
                         print("\nChange Master Password\n")

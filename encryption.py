@@ -1,4 +1,5 @@
 from cryptography.fernet import Fernet
+from pyffx import String
 
 # Load the keys
 with open ('./pwds/pwdkey.key', 'rb') as f:
@@ -6,7 +7,7 @@ with open ('./pwds/pwdkey.key', 'rb') as f:
 with open ('./pwds/unamekey.key', 'rb') as f:
     key_uname = f.read()
 with open ('./pwds/servicekey.key', 'rb') as f:
-    key_service = f.read()
+    FPEkey_service = f.read()
 with open ('./pwds/prnumkey.key', 'rb') as f:
     key_numP = f.read()
 with open ('./pwds/altnumkey.key', 'rb') as f:
@@ -14,7 +15,7 @@ with open ('./pwds/altnumkey.key', 'rb') as f:
     
 cipher_suite_pwd = Fernet(key_pwd)
 cipher_suite_uname = Fernet(key_uname)
-cipher_suite_service = Fernet(key_service)
+fpe_service = String(FPEkey_service, alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ', length=32)
 cipher_suite_numP = Fernet(key_numP)
 cipher_suite_numA = Fernet(key_numA)
 
@@ -37,7 +38,8 @@ def encrypt_username(username):
     return cipher_suite_uname.encrypt(username.encode()).decode()
 
 def encrypt_service(service):
-    return cipher_suite_service.encrypt(service.encode()).decode()
+    padded_service = service.ljust(32)
+    return fpe_service.encrypt(padded_service)
 
 def encrypt(service=None, username=None, password=None):
     if service==None and username==None and password==None:
@@ -74,7 +76,8 @@ def decrypt_username(encrypted_username):
     return cipher_suite_uname.decrypt(encrypted_username.encode()).decode()
 
 def decrypt_service(encrypted_service):
-    return cipher_suite_service.decrypt(encrypted_service.encode()).decode()
+    padded_service = fpe_service.decrypt(encrypted_service)
+    return padded_service.rstrip()
 
 def decrypt(encrypted_service=None, encrypted_username=None, encrypted_password=None):
     if encrypted_service==None and encrypted_username==None and encrypted_password==None:

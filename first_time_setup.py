@@ -5,7 +5,7 @@ from set_master_password import *
 from set_phone_numbers import *
 
 # print(len(os.listdir('./pwds/')))
-if len(os.listdir('./pwds/'))!=10:
+if not all (file in os.listdir('./pwds/') for file in ['alternative_phone_number.key', 'altnumkey.key', 'master_pwd.key', 'primary_phone_number.key', 'prnumkey.key', 'pwdkey.key', 'recovery_code.key', 'servicekey.key', 'unamekey.key']):
     set_master_password()
     print()
     set_phone_numbers()
