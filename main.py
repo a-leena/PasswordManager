@@ -175,7 +175,8 @@ def alternative_login():
     stored_master_password = load_master_password()
     provided_master_password = getpass("Enter master password: ")
     if verify_password(stored_master_password, provided_master_password):
-        _, alternative_phone_number =  load_phone_numbers()
+        primary_phone_number, alternative_phone_number =  load_phone_numbers()
+        send_otp(primary_phone_number)
         failed_attempts_otp = 0
         for attempt in range(MAXIMUM_ATTEMPTS_OTP_ALT):
             status, verified = verify_phone_number(alternative_phone_number)
