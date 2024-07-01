@@ -3,6 +3,7 @@ import re
 import os
 from twilio.rest import Client
 import time
+from datetime import datetime
 
 def hash_password (password):
     salt = bcrypt.gensalt()
@@ -49,6 +50,9 @@ def verify_phone_number (phone_number):
     status = None
     verification = send_otp(phone_number)
     start_time = time.time()
+    local_time = datetime.fromtimestamp(start_time+60)
+    formatted_local_time = local_time.strftime('%H:%M:%S')
+    print(f"(OTP expires in 1 minute. Enter OTP before {formatted_local_time})")
     provided_code = input("Enter the OTP sent to your phone: ")
     end_time = time.time()
     if end_time - start_time < 60:
